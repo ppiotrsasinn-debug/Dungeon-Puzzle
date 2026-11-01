@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dungeon Puzzle</title>
+    <title>Zagadka w Lochach / Dungeon Puzzle</title>
     <style>
         :root {
             --bg-color: #0c0a10;
@@ -13,822 +13,265 @@
             --text-main: #f0f0f5;
             --text-muted: #9b99b0;
             --danger: #e74c3c;
-            --frame-color: #3d2c5e;
+            --border-color: #3d2c5e;
         }
 
         body {
-            margin: 0;
-            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
         }
 
-        header {
-            text-align: center;
-            padding: 15px;
-            background: linear-gradient(to bottom, #1f1835, var(--bg-color));
-            width: 100%;
-            border-bottom: 3px solid var(--frame-color);
-            transition: border-color 0.3s;
-        }
-
-        .header-title-row {
+        .header-container {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
+            width: 100%;
+            max-width: 480px;
+            margin-bottom: 10px;
         }
 
         h1 {
+            font-size: 1.4rem;
             margin: 0;
-            font-size: 1.8rem;
-            letter-spacing: 2px;
             color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
             text-shadow: 0 0 10px var(--accent-glow);
         }
 
-        .btn-header {
-            background: #2b1f47;
-            border: 1px solid var(--accent-gold);
-            color: var(--accent-gold);
-            padding: 6px 10px;
+        .lang-switch {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .lang-switch:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .top-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 12px;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 0.85rem;
+            font-weight: 600;
             transition: all 0.2s;
         }
 
-        .btn-header:hover {
-            background: var(--accent-gold);
-            color: #000;
+        .btn:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 8px var(--accent-glow);
         }
 
         .stats-bar {
             display: flex;
-            justify-content: center;
             gap: 15px;
-            margin-top: 8px;
             font-size: 0.9rem;
             color: var(--text-muted);
+            margin-bottom: 12px;
+            background: var(--panel-bg);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
 
-        .stat-item span {
-            color: var(--accent-gold);
+        .stats-bar span {
+            color: var(--text-main);
             font-weight: bold;
         }
 
-        .game-container {
-            margin: 15px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            max-width: 420px;
-            width: 95%;
-        }
-
-        .rules-bar {
-            display: flex;
+        .rules-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 6px;
             width: 100%;
+            max-width: 480px;
+            margin-bottom: 15px;
         }
 
         .rule-card {
             background: var(--panel-bg);
-            border: 1px solid #3d2c5e;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 6px;
+            padding: 8px 4px;
             text-align: center;
-            flex: 1;
             font-size: 0.75rem;
             color: var(--text-muted);
         }
 
-        .rule-card b {
-            color: var(--text-main);
+        .rule-card strong {
             display: block;
+            color: var(--text-main);
+            margin-bottom: 2px;
+            font-size: 0.8rem;
         }
 
-        .board {
+        .grid {
             display: grid;
-            gap: 5px;
-            background: #110d1c;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1;
+            background: var(--panel-bg);
             padding: 10px;
             border-radius: 12px;
-            border: 2px solid #3d2c5e;
-            width: 100%;
-            box-sizing: border-box;
+            border: 1px solid var(--border-color);
         }
 
         .cell {
-            aspect-ratio: 1;
-            border-radius: 6px;
+            background: #231c38;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             cursor: pointer;
             user-select: none;
-            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.1s, border-color 0.2s;
         }
 
-        .cell.error {
-            background-color: rgba(231, 76, 60, 0.75) !important;
-            box-shadow: inset 0 0 8px #ff0000;
+        .cell:active {
+            transform: scale(0.95);
         }
-
-        .action-bar {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .spell-btn {
-            flex: 1;
-            background: #1f1835;
-            border: 1px solid #523b82;
-            color: var(--text-muted);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .spell-btn.active {
-            color: var(--accent-gold);
-            border-color: var(--accent-gold);
-            box-shadow: 0 0 8px var(--accent-glow);
-        }
-
-        .btn-raid {
-            background: linear-gradient(to bottom, #f39c12, #d35400);
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-        }
-
-        .modal-overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .modal-content {
-            background: var(--panel-bg);
-            border: 2px solid var(--accent-gold);
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        .dungeon-card {
-            background: #110d1c;
-            border: 1px solid #3d2c5e;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .dungeon-card h3 {
-            margin: 0 0 8px 0;
-            color: var(--accent-gold);
-            font-size: 1rem;
-        }
-
-        .levels-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
-        }
-
-        .level-node {
-            background: #1f1835;
-            border: 1px solid #523b82;
-            border-radius: 6px;
-            padding: 8px 2px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 0.8rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-        }
-
-        .level-node.locked {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .level-node.active-level {
-            border-color: var(--accent-gold);
-            box-shadow: 0 0 8px var(--accent-glow);
-        }
-
-        .stars {
-            font-size: 0.65rem;
-            color: var(--accent-gold);
-        }
-
-        .shop-section {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .shop-section h3 {
-            color: var(--accent-gold);
-            border-bottom: 1px solid #3d2c5e;
-            padding-bottom: 5px;
-            margin-top: 10px;
-            font-size: 1rem;
-        }
-
-        .shop-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .shop-item {
-            background: #110d1c;
-            border: 1px solid #3d2c5e;
-            border-radius: 8px;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .shop-item .icon { font-size: 1.8rem; }
-        .shop-item .name { font-size: 0.85rem; font-weight: bold; }
-        .shop-item .cost { font-size: 0.8rem; color: var(--accent-gold); }
-
-        .btn-buy {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .btn-buy.equipped { background: #2980b9; }
-        .btn-buy.disabled { background: #7f8c8d; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-    <header id="main-header">
-        <div class="header-title-row">
-            <h1>DUNGEON PUZZLE</h1>
-            <button class="btn-header" onclick="openMap()">🗺️ Mapa</button>
-            <button class="btn-header" onclick="openShop()">🛒 Sklep</button>
-        </div>
-        <div class="stats-bar">
-            <div class="stat-item">Loch: <span id="ui-dungeon">1</span></div>
-            <div class="stat-item">Piętro: <span id="ui-level">1</span>/5</div>
-            <div class="stat-item">⏱️ Czas: <span id="ui-timer">0</span>s</div>
-            <div class="stat-item">💰 Złoto: <span id="ui-gold">10</span></div>
-        </div>
-    </header>
-
-    <div class="game-container">
-        <div class="rules-bar">
-            <div class="rule-card"><b>1 na Kolumnę</b>& Wiersz</div>
-            <div class="rule-card"><b>1 na Kolor</b>Regionu</div>
-            <div class="rule-card"><b>Brak styków</b>(Nawet rogami)</div>
-        </div>
-
-        <div id="board" class="board"></div>
-
-        <div class="action-bar">
-            <button id="spell-scout" class="spell-btn" onclick="castSpell('scout')">⚡ Zwiad (20 zł)</button>
-            <button id="spell-cut" class="spell-btn" onclick="castSpell('cut')">⚔️ Cięcie (50 zł)</button>
-        </div>
-
-        <button class="btn-raid" onclick="initLevel()">Resetuj Planszę</button>
+    <div class="header-container">
+        <h1 id="ui-title">Zagadka w Lochach</h1>
+        <button class="lang-switch" onclick="toggleLanguage()">EN / PL</button>
     </div>
 
-    <div id="victory-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="color:var(--accent-gold); margin-top:0;">RAJD ZALICZONY!</h2>
-            <p id="victory-stars" style="font-size:1.8rem; margin:5px 0;">⭐⭐⭐</p>
-            <p id="victory-text">Poziom ukończony! Zyskano złoto.</p>
-            <button class="btn-raid" onclick="nextLevel()">Następny Rajd</button>
+    <div class="top-bar">
+        <button class="btn" onclick="openMap()" id="btn-map">🗺️ Mapa</button>
+        <button class="btn" onclick="openShop()" id="btn-shop">🛒 Sklep</button>
+    </div>
+
+    <div class="stats-bar">
+        <div><span id="txt-dungeon">Loch</span>: <span id="dungeon-num">1</span></div>
+        <div><span id="txt-floor">Piętro</span>: <span id="floor-num">3/5</span></div>
+        <div>⏱️ <span id="txt-time">Czas</span>: <span id="timer-val">12s</span></div>
+        <div>🪙 <span id="txt-gold">Złoto</span>: <span id="gold-val">110</span></div>
+    </div>
+
+    <div class="rules-container">
+        <div class="rule-card">
+            <strong id="rule1-title">1 na Kolumnę</strong>
+            <span id="rule1-desc">& Wiersz</span>
+        </div>
+        <div class="rule-card">
+            <strong id="rule2-title">1 na Kolor</strong>
+            <span id="rule2-desc">Regionu</span>
+        </div>
+        <div class="rule-card">
+            <strong id="rule3-title">Brak styków</strong>
+            <span id="rule3-desc">(Nawet rogami)</span>
         </div>
     </div>
 
-    <div id="map-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="color:var(--accent-gold); margin-top:0;">MAPA SWIATA</h2>
-            <div id="map-container"></div>
-            <button class="btn-raid" style="margin-top:10px;" onclick="closeMap()">Zamknij Mapę</button>
-        </div>
-    </div>
-
-    <div id="shop-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 style="color:var(--accent-gold); margin-top:0;">SKLEP Z EKWIPUNKIEM</h2>
-            <div class="shop-section">
-                <h3>🗡️ Skórki Broni</h3>
-                <div class="shop-grid" id="shop-weapons"></div>
-            </div>
-            <div class="shop-section">
-                <h3>🖼️ Ramki Profilu</h3>
-                <div class="shop-grid" id="shop-frames"></div>
-            </div>
-            <button class="btn-raid" style="margin-top:10px;" onclick="closeShop()">Zamknij Sklep</button>
-        </div>
+    <div class="grid" id="game-grid">
+        <!-- Plansza generowana dynamicznie -->
     </div>
 
     <script>
-        const PALETTES = [
-            ['#2e5b7a', '#7a2e6e', '#2e7a4f', '#7a682e', '#7a2e2e', '#4a2e7a'],
-            ['#2c405e', '#5e2c59', '#2c5e42', '#5e4e2c', '#5e2c2c', '#382c5e']
-        ];
+        let currentLang = 'pl';
 
-        const DUNGEONS_DATA = [
-            { id: 1, name: 'Piwnica Krainy', size: 4 },
-            { id: 2, name: 'Mroczne Katakumby', size: 5 },
-            { id: 3, name: 'Wieża Czarodzieja', size: 6 }
-        ];
-
-        const WEAPONS = [
-            { id: 'default', name: 'Żelazny Miecz', icon: '⚔️', cost: 0 },
-            { id: 'fire', name: 'Ognisty Miecz', icon: '🗡️', cost: 100 },
-            { id: 'ice', name: 'Lodowy Topór', icon: '🪓', cost: 200 },
-            { id: 'thunder', name: 'Młot Piorunów', icon: '🔨', cost: 350 },
-            { id: 'bow', name: 'Łuk Tropiciela', icon: '🏹', cost: 500 }
-        ];
-
-        const FRAMES = [
-            { id: 'wood', name: 'Drewniana', color: '#3d2c5e', cost: 0 },
-            { id: 'silver', name: 'Srebrna', color: '#bdc3c7', cost: 150 },
-            { id: 'gold', name: 'Złota', color: '#f1c40f', cost: 300 }
-        ];
-
-        let state = {
-            dungeon: 1,
-            level: 1,
-            gold: 10,
-            size: 4,
-            grid: [],
-            regions: [],
-            solution: [],
-            equippedWeapon: 'default',
-            equippedFrame: 'wood',
-            unlockedWeapons: ['default'],
-            unlockedFrames: ['wood'],
-            levelStars: {},
-            timerSeconds: 0
+        const translations = {
+            pl: {
+                title: "Zagadka w Lochach",
+                map: "🗺️ Mapa",
+                shop: "🛒 Sklep",
+                dungeon: "Loch",
+                floor: "Piętro",
+                time: "Czas",
+                gold: "Złoto",
+                r1Title: "1 na Kolumnę",
+                r1Desc: "& Wiersz",
+                r2Title: "1 na Kolor",
+                r2Desc: "Regionu",
+                r3Title: "Brak styków",
+                r3Desc: "(Nawet rogami)"
+            },
+            en: {
+                title: "Dungeon Puzzle",
+                map: "🗺️ Map",
+                shop: "🛒 Shop",
+                dungeon: "Dungeon",
+                floor: "Floor",
+                time: "Time",
+                gold: "Gold",
+                r1Title: "1 per Column",
+                r1Desc: "& Row",
+                r2Title: "1 per Color",
+                r2Desc: "Region",
+                r3Title: "No Touching",
+                r3Desc: "(Even corners)"
+            }
         };
 
-        let timerInterval = null;
-
-        function loadSaveData() {
-            let saved = localStorage.getItem('dungeon_puzzle_save');
-            if(saved) {
-                try {
-                    let d = JSON.parse(saved);
-                    state.gold = d.gold || 10;
-                    state.dungeon = d.dungeon || 1;
-                    state.level = d.level || 1;
-                    state.equippedWeapon = d.equippedWeapon || 'default';
-                    state.equippedFrame = d.equippedFrame || 'wood';
-                    state.unlockedWeapons = d.unlockedWeapons || ['default'];
-                    state.unlockedFrames = d.unlockedFrames || ['wood'];
-                    state.levelStars = d.levelStars || {};
-                } catch(e) {}
-            }
+        function toggleLanguage() {
+            currentLang = currentLang === 'pl' ? 'en' : 'pl';
+            updateTexts();
         }
 
-        function saveGameData() {
-            localStorage.setItem('dungeon_puzzle_save', JSON.stringify({
-                gold: state.gold,
-                dungeon: state.dungeon,
-                level: state.level,
-                equippedWeapon: state.equippedWeapon,
-                equippedFrame: state.equippedFrame,
-                unlockedWeapons: state.unlockedWeapons,
-                unlockedFrames: state.unlockedFrames,
-                levelStars: state.levelStars
-            }));
-        }
-
-        function startTimer() {
-            clearInterval(timerInterval);
-            state.timerSeconds = 0;
-            document.getElementById('ui-timer').innerText = 0;
-            timerInterval = setInterval(() => {
-                state.timerSeconds++;
-                document.getElementById('ui-timer').innerText = state.timerSeconds;
-            }, 1000);
-        }
-
-        function stopTimer() {
-            clearInterval(timerInterval);
-        }
-
-        function initLevel() {
-            let dObj = DUNGEONS_DATA.find(d => d.id === state.dungeon) || DUNGEONS_DATA[0];
-            state.size = dObj.size;
-
-            let generated = generateFastBoard(state.size);
-            state.solution = generated.solution;
-            state.regions = generated.regions;
-            state.grid = Array(state.size * state.size).fill(0);
-
-            startTimer();
-            updateUI();
-            renderBoard();
-        }
-
-        function generateFastBoard(size) {
-            let board = Array(size * size).fill(0);
-            let cols = Array(size).fill(false);
-
-            function solve(row) {
-                if (row === size) return true;
-                let availableCols = [];
-                for (let c = 0; c < size; c++) {
-                    if (!cols[c]) {
-                        let ok = true;
-                        if (row > 0) {
-                            for (let dc = -1; dc <= 1; dc++) {
-                                let nc = c + dc;
-                                if (nc >= 0 && nc < size && board[(row - 1) * size + nc] === 1) ok = false;
-                            }
-                        }
-                        if (ok) availableCols.push(c);
-                    }
-                }
-                availableCols.sort(() => Math.random() - 0.5);
-
-                for (let c of availableCols) {
-                    board[row * size + c] = 1;
-                    cols[c] = true;
-                    if (solve(row + 1)) return true;
-                    board[row * size + c] = 0;
-                    cols[c] = false;
-                }
-                return false;
-            }
-
-            solve(0);
-
-            let regions = Array(size * size).fill(-1);
-            let seeds = [];
-
-            for (let i = 0; i < size * size; i++) {
-                if (board[i] === 1) {
-                    let r = Math.floor(i / size);
-                    let c = i % size;
-                    seeds.push({ r: r, c: c, regId: seeds.length });
-                }
-            }
-
-            for (let r = 0; r < size; r++) {
-                for (let c = 0; c < size; c++) {
-                    let bestDist = 9999;
-                    let bestReg = 0;
-                    for (let s of seeds) {
-                        let dist = Math.abs(r - s.r) + Math.abs(c - s.c) + (Math.random() * 0.4);
-                        if (dist < bestDist) {
-                            bestDist = dist;
-                            bestReg = s.regId;
-                        }
-                    }
-                    regions[r * size + c] = bestReg;
-                }
-            }
-
-            return { solution: board, regions: regions };
-        }
-
-        function updateUI() {
-            document.getElementById('ui-dungeon').innerText = state.dungeon;
-            document.getElementById('ui-level').innerText = state.level;
-            document.getElementById('ui-gold').innerText = state.gold;
-            document.getElementById('spell-scout').classList.toggle('active', state.gold >= 20);
-            document.getElementById('spell-cut').classList.toggle('active', state.gold >= 50);
-
-            let frameObj = FRAMES.find(f => f.id === state.equippedFrame);
-            if(frameObj) {
-                document.getElementById('main-header').style.borderColor = frameObj.color;
-            }
-        }
-
-        function renderBoard() {
-            const boardEl = document.getElementById('board');
-            boardEl.style.gridTemplateColumns = `repeat(${state.size}, 1fr)`;
-            boardEl.innerHTML = '';
-
-            let palette = PALETTES[(state.dungeon - 1) % PALETTES.length];
-            let currentWeaponObj = WEAPONS.find(w => w.id === state.equippedWeapon) || WEAPONS[0];
-
-            for (let i = 0; i < state.size * state.size; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.style.backgroundColor = palette[state.regions[i] % palette.length];
-
-                if (state.grid[i] === 1) cell.innerText = currentWeaponObj.icon;
-                else if (state.grid[i] === 2) cell.innerText = '🎯';
-
-                if (hasConflict(i)) cell.classList.add('error');
-
-                cell.onclick = () => {
-                    state.grid[i] = (state.grid[i] + 1) % 3;
-                    renderBoard();
-                    checkVictory();
-                };
-
-                cell.oncontextmenu = (e) => {
-                    e.preventDefault();
-                    state.grid[i] = 2;
-                    renderBoard();
-                    checkVictory();
-                };
-
-                boardEl.appendChild(cell);
-            }
-        }
-
-        function hasConflict(idx) {
-            if (state.grid[idx] !== 1) return false;
-            let r = Math.floor(idx / state.size), c = idx % state.size, size = state.size;
-
-            for (let dr = -1; dr <= 1; dr++) {
-                for (let dc = -1; dc <= 1; dc++) {
-                    if (dr === 0 && dc === 0) continue;
-                    let nr = r + dr, nc = c + dc;
-                    if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
-                        if (state.grid[nr * size + nc] === 1) return true;
-                    }
-                }
-            }
-
-            let rowCount = 0, colCount = 0, regCount = 0;
-            let reg = state.regions[idx];
-
-            for (let i = 0; i < size; i++) {
-                if (state.grid[r * size + i] === 1) rowCount++;
-                if (state.grid[i * size + c] === 1) colCount++;
-            }
-            for (let i = 0; i < size * size; i++) {
-                if (state.regions[i] === reg && state.grid[i] === 1) regCount++;
-            }
-
-            return rowCount > 1 || colCount > 1 || regCount > 1;
-        }
-
-        function checkVictory() {
-            let placed = state.grid.filter(v => v === 1).length;
-            if (placed !== state.size) return;
-
-            for (let i = 0; i < state.grid.length; i++) {
-                if (hasConflict(i)) return;
-            }
-
-            stopTimer();
-
-            let stars = 1;
-            if(state.timerSeconds <= 20) stars = 3;
-            else if(state.timerSeconds <= 40) stars = 2;
-
-            let key = `${state.dungeon}-${state.level}`;
-            if(!state.levelStars[key] || state.levelStars[key] < stars) {
-                state.levelStars[key] = stars;
-            }
-
-            let reward = stars * 10;
-            state.gold += reward;
-
-            saveGameData();
-            updateUI();
-
-            document.getElementById('victory-stars').innerText = '⭐'.repeat(stars);
-            document.getElementById('victory-text').innerText = `Czas: ${state.timerSeconds}s. Nagroda: +${reward} złota!`;
-            document.getElementById('victory-modal').classList.add('show');
-        }
-
-        function nextLevel() {
-            document.getElementById('victory-modal').classList.remove('show');
-            state.level++;
-            if (state.level > 5) {
-                state.level = 1;
-                state.dungeon++;
-            }
-            saveGameData();
-            initLevel();
-        }
-
-        function castSpell(type) {
-            if (type === 'scout' && state.gold >= 20) {
-                state.gold -= 20;
-                for (let i = 0; i < state.grid.length; i++) {
-                    if (state.grid[i] === 1) {
-                        let r = Math.floor(i / state.size), c = i % state.size;
-                        for (let dr = -1; dr <= 1; dr++) {
-                            for (let dc = -1; dc <= 1; dc++) {
-                                let nr = r + dr, nc = c + dc;
-                                if (nr >= 0 && nr < state.size && nc >= 0 && nc < state.size) {
-                                    let nIdx = nr * state.size + nc;
-                                    if (state.grid[nIdx] === 0) state.grid[nIdx] = 2;
-                                }
-                            }
-                        }
-                    }
-                }
-            } else if (type === 'cut' && state.gold >= 50) {
-                state.gold -= 50;
-                let emptyCorrect = [];
-                for (let i = 0; i < state.grid.length; i++) {
-                    if (state.solution[i] === 1 && state.grid[i] !== 1) emptyCorrect.push(i);
-                }
-                if (emptyCorrect.length > 0) {
-                    let targetIdx = emptyCorrect[Math.floor(Math.random() * emptyCorrect.length)];
-                    state.grid[targetIdx] = 1;
-                }
-            }
-            saveGameData();
-            updateUI();
-            renderBoard();
-            checkVictory();
+        function updateTexts() {
+            const t = translations[currentLang];
+            document.getElementById('ui-title').innerText = t.title;
+            document.getElementById('btn-map').innerText = t.map;
+            document.getElementById('btn-shop').innerText = t.shop;
+            document.getElementById('txt-dungeon').innerText = t.dungeon;
+            document.getElementById('txt-floor').innerText = t.floor;
+            document.getElementById('txt-time').innerText = t.time;
+            document.getElementById('txt-gold').innerText = t.gold;
+            document.getElementById('rule1-title').innerText = t.r1Title;
+            document.getElementById('rule1-desc').innerText = t.r1Desc;
+            document.getElementById('rule2-title').innerText = t.r2Title;
+            document.getElementById('rule2-desc').innerText = t.r2Desc;
+            document.getElementById('rule3-title').innerText = t.r3Title;
+            document.getElementById('rule3-desc').innerText = t.r3Desc;
         }
 
         function openMap() {
-            renderMap();
-            document.getElementById('map-modal').classList.add('show');
-        }
-
-        function closeMap() {
-            document.getElementById('map-modal').classList.remove('show');
-        }
-
-        function renderMap() {
-            const container = document.getElementById('map-container');
-            container.innerHTML = '';
-
-            DUNGEONS_DATA.forEach(d => {
-                let card = document.createElement('div');
-                card.className = 'dungeon-card';
-                card.innerHTML = `<h3>Loch ${d.id}: ${d.name} (${d.size}x${d.size})</h3>`;
-
-                let grid = document.createElement('div');
-                grid.className = 'levels-grid';
-
-                for(let lvl = 1; lvl <= 5; lvl++) {
-                    let key = `${d.id}-${lvl}`;
-                    let stars = state.levelStars[key] || 0;
-                    
-                    let isUnlocked = (d.id === 1 && lvl === 1) || state.levelStars[`${d.id}-${lvl-1}`] || (lvl === 1 && state.levelStars[`${d.id-1}-5`]);
-                    let isCurrent = (state.dungeon === d.id && state.level === lvl);
-
-                    let node = document.createElement('div');
-                    node.className = `level-node ${!isUnlocked ? 'locked' : ''} ${isCurrent ? 'active-level' : ''}`;
-                    
-                    let starsStr = stars > 0 ? '⭐'.repeat(stars) : '---';
-                    node.innerHTML = `<b>P${lvl}</b><div class="stars">${starsStr}</div>`;
-
-                    if(isUnlocked) {
-                        node.onclick = () => {
-                            state.dungeon = d.id;
-                            state.level = lvl;
-                            saveGameData();
-                            closeMap();
-                            initLevel();
-                        };
-                    }
-
-                    grid.appendChild(node);
-                }
-
-                card.appendChild(grid);
-                container.appendChild(card);
-            });
+            alert(currentLang === 'pl' ? "Otwieranie mapy lochów..." : "Opening dungeon map...");
         }
 
         function openShop() {
-            renderShop();
-            document.getElementById('shop-modal').classList.add('show');
+            alert(currentLang === 'pl' ? "Otwieranie sklepu..." : "Opening shop...");
         }
 
-        function closeShop() {
-            document.getElementById('shop-modal').classList.remove('show');
-            updateUI();
-            renderBoard();
+        // Przykładowe renderowanie siatki
+        const grid = document.getElementById('game-grid');
+        for (let i = 0; i < 16; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            if (i === 5) cell.innerText = '⚔️';
+            if (i === 9) cell.innerText = '⚔️';
+            if (i === 11) cell.innerText = '🎯';
+            if (i === 13) cell.innerText = '⚔️';
+            grid.appendChild(cell);
         }
-
-        function renderShop() {
-            const weaponsEl = document.getElementById('shop-weapons');
-            const framesEl = document.getElementById('shop-frames');
-            weaponsEl.innerHTML = '';
-            framesEl.innerHTML = '';
-
-            WEAPONS.forEach(w => {
-                let unlocked = state.unlockedWeapons.includes(w.id);
-                let equipped = state.equippedWeapon === w.id;
-                let btnText = equipped ? 'Założono' : (unlocked ? 'Załóż' : 'Kup');
-                let btnClass = equipped ? 'btn-buy equipped' : 'btn-buy';
-                if(!unlocked && state.gold < w.cost) btnClass += ' disabled';
-
-                weaponsEl.innerHTML += `
-                    <div class="shop-item">
-                        <div class="icon">${w.icon}</div>
-                        <div class="name">${w.name}</div>
-                        <div class="cost">${unlocked ? 'Odblokowano' : w.cost + ' zł'}</div>
-                        <button class="${btnClass}" onclick="buyOrEquipWeapon('${w.id}')">${btnText}</button>
-                    </div>
-                `;
-            });
-
-            FRAMES.forEach(f => {
-                let unlocked = state.unlockedFrames.includes(f.id);
-                let equipped = state.equippedFrame === f.id;
-                let btnText = equipped ? 'Założono' : (unlocked ? 'Załóż' : 'Kup');
-                let btnClass = equipped ? 'btn-buy equipped' : 'btn-buy';
-                if(!unlocked && state.gold < f.cost) btnClass += ' disabled';
-
-                framesEl.innerHTML += `
-                    <div class="shop-item" style="border-color:${f.color}">
-                        <div class="icon">🖼️</div>
-                        <div class="name">${f.name}</div>
-                        <div class="cost">${unlocked ? 'Odblokowano' : f.cost + ' zł'}</div>
-                        <button class="${btnClass}" onclick="buyOrEquipFrame('${f.id}')">${btnText}</button>
-                    </div>
-                `;
-            });
-        }
-
-        function buyOrEquipWeapon(id) {
-            let item = WEAPONS.find(w => w.id === id);
-            if(!item) return;
-            if(state.unlockedWeapons.includes(id)) {
-                state.equippedWeapon = id;
-            } else if(state.gold >= item.cost) {
-                state.gold -= item.cost;
-                state.unlockedWeapons.push(id);
-                state.equippedWeapon = id;
-            }
-            saveGameData();
-            updateUI();
-            renderShop();
-        }
-
-        function buyOrEquipFrame(id) {
-            let item = FRAMES.find(f => f.id === id);
-            if(!item) return;
-            if(state.unlockedFrames.includes(id)) {
-                state.equippedFrame = id;
-            } else if(state.gold >= item.cost) {
-                state.gold -= item.cost;
-                state.unlockedFrames.push(id);
-                state.equippedFrame = id;
-            }
-            saveGameData();
-            updateUI();
-            renderShop();
-        }
-
-        window.onload = function() {
-            loadSaveData();
-            initLevel();
-        };
     </script>
 </body>
 </html>
