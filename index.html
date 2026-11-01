@@ -647,4 +647,188 @@
         }
 
         function nextLevel() {
-            document.getElementById('victory-modal
+            document.getElementById('victory-modal').classList.remove('show');
+            state.level++;
+            if (state.level > 5) {
+                state.level = 1;
+                state.dungeon++;
+            }
+            saveGameData();
+            initLevel();
+        }
+
+        function castSpell(type) {
+            if (type === 'scout' && state.gold >= 20) {
+                state.gold -= 20;
+                for (let i = 0; i < state.grid.length; i++) {
+                    if (state.grid[i] === 1) {
+                        let r = Math.floor(i / state.size), c = i % state.size;
+                        for (let dr = -1; dr <= 1; dr++) {
+                            for (let dc = -1; dc <= 1; dc++) {
+                                let nr = r + dr, nc = c + dc;
+                                if (nr >= 0 && nr < state.size && nc >= 0 && nc < state.size) {
+                                    let nIdx = nr * state.size + nc;
+                                    if (state.grid[nIdx] === 0) state.grid[nIdx] = 2;
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (type === 'cut' && state.gold >= 50) {
+                state.gold -= 50;
+                let emptyCorrect = [];
+                for (let i = 0; i < state.grid.length; i++) {
+                    if (state.solution[i] === 1 && state.grid[i] !== 1) emptyCorrect.push(i);
+                }
+                if (emptyCorrect.length > 0) {
+                    let targetIdx = emptyCorrect[Math.floor(Math.random() * emptyCorrect.length)];
+                    state.grid[targetIdx] = 1;
+                }
+            }
+            saveGameData();
+            updateUI();
+            renderBoard();
+            checkVictory();
+        }
+
+        function openMap() {
+            renderMap();
+            document.getElementById('map-modal').classList.add('show');
+        }
+
+        function closeMap() {
+            document.getElementById('map-modal').classList.remove('show');
+        }
+
+        function renderMap() {
+            const container = document.getElementById('map-container');
+            container.innerHTML = '';
+
+            DUNGEONS_DATA.forEach(d => {
+                let card = document.createElement('div');
+                card.className = 'dungeon-card';
+                card.innerHTML = `<h3>Loch ${d.id}: ${d.name} (${d.size}x${d.size})</h3>`;
+
+                let grid = document.createElement('div');
+                grid.className = 'levels-grid';
+
+                for(let lvl = 1; lvl <= 5; lvl++) {
+                    let key = `${d.id}-${lvl}`;
+                    let stars = state.levelStars[key] || 0;
+                    
+                    let isUnlocked = (d.id === 1 && lvl === 1) || state.levelStars[`${d.id}-${lvl-1}`] || (lvl === 1 && state.levelStars[`${d.id-1}-5`]);
+                    let isCurrent = (state.dungeon === d.id && state.level === lvl);
+
+                    let node = document.createElement('div');
+                    node.className = `level-node ${!isUnlocked ? 'locked' : ''} ${isCurrent ? 'active-level' : ''}`;
+                    
+                    let starsStr = stars > 0 ? '⭐'.repeat(stars) : '---';
+                    node.innerHTML = `<b>P${lvl}</b><div class="stars">${starsStr}</div>`;
+
+                    if(isUnlocked) {
+                        node.onclick = () => {
+                            state.dungeon = d.id;
+                            state.level = lvl;
+                            saveGameData();
+                            closeMap();
+                            initLevel();
+                        };
+                    }
+
+                    grid.appendChild(node);
+                }
+
+                card.appendChild(grid);
+                container.appendChild(card);
+            });
+        }
+
+        function openShop() {
+            renderShop();
+            document.getElementById('shop-modal').classList.add('show');
+        }
+
+        function closeShop() {
+            document.getElementById('shop-modal').classList.remove('show');
+            updateUI();
+            renderBoard();
+        }
+
+        function renderShop() {
+            const weaponsEl = document.getElementById('shop-weapons');
+            const framesEl = document.getElementById('shop-frames');
+            weaponsEl.innerHTML = '';
+            framesEl.innerHTML = '';
+
+            WEAPONS.forEach(w => {
+                let unlocked = state.unlockedWeapons.includes(w.id);
+                let equipped = state.equippedWeapon === w.id;
+                let btnText = equipped ? 'Założono' : (unlocked ? 'Załóż' : 'Kup');
+                let btnClass = equipped ? 'btn-buy equipped' : 'btn-buy';
+                if(!unlocked && state.gold < w.cost) btnClass += ' disabled';
+
+                weaponsEl.innerHTML += `
+                    <div class="shop-item">
+                        <div class="icon">${w.icon}</div>
+                        <div class="name">${w.name}</div>
+                        <div class="cost">${unlocked ? 'Odblokowano' : w.cost + ' zł'}</div>
+                        <button class="${btnClass}" onclick="buyOrEquipWeapon('${w.id}')">${btnText}</button>
+                    </div>
+                `;
+            });
+
+            FRAMES.forEach(f => {
+                let unlocked = state.unlockedFrames.includes(f.id);
+                let equipped = state.equippedFrame === f.id;
+                let btnText = equipped ? 'Założono' : (unlocked ? 'Załóż' : 'Kup');
+                let btnClass = equipped ? 'btn-buy equipped' : 'btn-buy';
+                if(!unlocked && state.gold < f.cost) btnClass += ' disabled';
+
+                framesEl.innerHTML += `
+                    <div class="shop-item" style="border-color:${f.color}">
+                        <div class="icon">🖼️</div>
+                        <div class="name">${f.name}</div>
+                        <div class="cost">${unlocked ? 'Odblokowano' : f.cost + ' zł'}</div>
+                        <button class="${btnClass}" onclick="buyOrEquipFrame('${f.id}')">${btnText}</button>
+                    </div>
+                `;
+            });
+        }
+
+        function buyOrEquipWeapon(id) {
+            let item = WEAPONS.find(w => w.id === id);
+            if(!item) return;
+            if(state.unlockedWeapons.includes(id)) {
+                state.equippedWeapon = id;
+            } else if(state.gold >= item.cost) {
+                state.gold -= item.cost;
+                state.unlockedWeapons.push(id);
+                state.equippedWeapon = id;
+            }
+            saveGameData();
+            updateUI();
+            renderShop();
+        }
+
+        function buyOrEquipFrame(id) {
+            let item = FRAMES.find(f => f.id === id);
+            if(!item) return;
+            if(state.unlockedFrames.includes(id)) {
+                state.equippedFrame = id;
+            } else if(state.gold >= item.cost) {
+                state.gold -= item.cost;
+                state.unlockedFrames.push(id);
+                state.equippedFrame = id;
+            }
+            saveGameData();
+            updateUI();
+            renderShop();
+        }
+
+        window.onload = function() {
+            loadSaveData();
+            initLevel();
+        };
+    </script>
+</body>
+</html>
